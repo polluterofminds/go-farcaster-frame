@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 type Embed struct {
@@ -47,8 +50,6 @@ type MemeResponse struct {
 }
 
 func GetRandomMeme() string {
-	//	bind the port for render
-	os.Setenv("PORT", ":8080")
 	url := "https://hub.pinata.cloud/v1/castsByParent?url=chain://eip155:1/erc721:0xfd8427165df67df6d7fd689ae67c8ebf56d9ca61"
 
 	resp, err := http.Get(url)
@@ -103,6 +104,16 @@ func GetRandomMeme() string {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	// Parse templates
 	templatesDir := "./templates"
 	template := template.Must(template.ParseFiles(filepath.Join(templatesDir, "template.html")))
@@ -136,10 +147,10 @@ func main() {
 	})
 
 	// Start the HTTP server on port 8080 and handle errors
-	fmt.Println("Server is running on http://localhost:8080")
-	err := http.ListenAndServe(os.Getenv("PORT"), nil)
-	if err != nil {
-		fmt.Println("Error starting server: ", err)
+	fmt.Println("Server listening on port", port)
+	httpError := http.ListenAndServe(":"+port, nil)
+	if httpError != nil {
+		fmt.Println("Error starting server: ", httpError)
 		return
 	}
 }
