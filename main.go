@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -46,6 +47,8 @@ type MemeResponse struct {
 }
 
 func GetRandomMeme() string {
+	//	bind the port for render
+	os.Setenv("PORT", ":8080")
 	url := "https://hub.pinata.cloud/v1/castsByParent?url=chain://eip155:1/erc721:0xfd8427165df67df6d7fd689ae67c8ebf56d9ca61"
 
 	resp, err := http.Get(url)
@@ -134,7 +137,7 @@ func main() {
 
 	// Start the HTTP server on port 8080 and handle errors
 	fmt.Println("Server is running on http://localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(os.Getenv("PORT"), nil)
 	if err != nil {
 		fmt.Println("Error starting server: ", err)
 		return
